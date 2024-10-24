@@ -27,6 +27,20 @@ public class MatchingEngineTest {
         engine.processOrder(buyOrder);
 
         Assertions.assertEquals(5, sellOrder.getQuantity());
+        Assertions.assertEquals(0, buyOrder.getQuantity());
     }
 
+    @Test
+    public void testLimitSellOrder(){
+        Order buyOrder = new Order("order1", 100, 10, OrderType.BUY, OrderStrat.Limit, "AAPL");
+        engine.processOrder(buyOrder);
+
+        Assertions.assertEquals(10, engine.getOrderBook().getTopBuyOrder("AAPL").getQuantity());
+
+        Order sellOrder = new Order("order2", 90, 5, OrderType.SELL, OrderStrat.Limit, "AAPL");
+        engine.processOrder(sellOrder);
+
+        Assertions.assertEquals(5, buyOrder.getQuantity());
+        Assertions.assertEquals(0, sellOrder.getQuantity());
+    }
 }
