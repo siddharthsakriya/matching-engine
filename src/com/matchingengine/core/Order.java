@@ -1,12 +1,12 @@
 package com.matchingengine.core;
 
 public class Order {
-    private String ID;
-    private double price;
+    private final String ID;
+    private final double price;
     private int quantity;
-    private OrderType orderType;
-    private OrderStrat orderStrat;
-    private String product;
+    private final OrderType orderType;
+    private final OrderStrat orderStrat;
+    private final String product;
 
     public Order(String ID, double price, int quantity, OrderType orderType, OrderStrat orderStrat, String product) {
         this.ID = ID;
@@ -14,6 +14,7 @@ public class Order {
         this.quantity = quantity;
         this.orderType = orderType;
         this.orderStrat = orderStrat;
+        this.product = product;
     }
 
     public String getID() {
@@ -40,4 +41,7 @@ public class Order {
         return product;
     }
 
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }
