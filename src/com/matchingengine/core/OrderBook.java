@@ -19,7 +19,7 @@ public class OrderBook {
         if (order.getOrderType() == OrderType.BUY) {
             //if doesnt exist we need to make a new priority queue
             buyOrdersByProduct.computeIfAbsent(order.getProduct(), k -> new PriorityQueue<Order>(
-                    (o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice())
+                    (o1, o2) -> Double.compare(o2.getPrice(), o2.getPrice())
             ));
             buyOrdersByProduct.get(order.getProduct()).add(order);
         }
@@ -45,5 +45,4 @@ public class OrderBook {
     public Order removeTopSellOrder(String product){
         return sellOrdersByProduct.get(product) != null ? sellOrdersByProduct.get(product).poll() : null;
     }
-
 }
