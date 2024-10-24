@@ -1,15 +1,12 @@
 package com.matchingengine.test;
 
 import com.matchingengine.core.Order;
-import com.matchingengine.core.OrderBook;
 import com.matchingengine.core.OrderStrat;
 import com.matchingengine.core.OrderType;
 import com.matchingengine.matching.MatchingEngine;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MatchingEngineTest {
     private MatchingEngine engine;
@@ -18,7 +15,6 @@ public class MatchingEngineTest {
     void setUp() {
         engine = new MatchingEngine();
     }
-
 
     @Test
     public void testLimitBuyOrder(){
