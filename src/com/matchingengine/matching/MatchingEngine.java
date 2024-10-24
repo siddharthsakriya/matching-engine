@@ -133,4 +133,8 @@ public class MatchingEngine {
             }
         }
     }
+
+    public OrderBook getOrderBook() {
+        return orderBook;
+    }
 }

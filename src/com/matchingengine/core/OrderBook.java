@@ -17,7 +17,6 @@ public class OrderBook {
 
     public void addOrder(Order order){
         if (order.getOrderType() == OrderType.BUY) {
-            //if doesnt exist we need to make a new priority queue
             buyOrdersByProduct.computeIfAbsent(order.getProduct(), k -> new PriorityQueue<Order>(
                     (o1, o2) -> Double.compare(o2.getPrice(), o2.getPrice())
             ));
@@ -27,6 +26,7 @@ public class OrderBook {
             sellOrdersByProduct.computeIfAbsent(order.getProduct(), k -> new PriorityQueue<Order>(
                     (o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice())
             ));
+            sellOrdersByProduct.get(order.getProduct()).add(order);
         }
     }
 
