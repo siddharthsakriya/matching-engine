@@ -1,4 +1,6 @@
 package com.matchingengine.core;
 
-public class OrderType {
+public enum OrderType {
+    BUY,
+    SELL
 }

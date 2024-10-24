@@ -1,4 +1,7 @@
 package com.matchingengine.core;
 
-public class OrderStrat {
+public enum OrderStrat {
+    FoK,
+    Market,
+    Limit
 }
