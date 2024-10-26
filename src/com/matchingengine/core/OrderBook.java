@@ -92,6 +92,16 @@ public class OrderBook {
         }
     }
 
+    public void cancelOrder(String orderId, OrderType orderType, double price){
+        if (orderType == OrderType.BUY && buyPriceLevels.containsKey(price)) {
+            buyPriceLevels.get(price).removeIf(order -> Objects.equals(order.getID(), orderId));
+        }
+
+        if (orderType == OrderType.SELL && sellPriceLevels.containsKey(price)) {
+            sellPriceLevels.get(price).removeIf(order -> Objects.equals(order.getID(), orderId));
+        }
+    }
+
     public PriorityQueue<Double> getSellBook(){
         return sellOrders;
     }
@@ -107,4 +117,6 @@ public class OrderBook {
     public HashMap<Double, Queue<Order>> getSellPriceLevels(){
         return sellPriceLevels;
     }
+
+
 }

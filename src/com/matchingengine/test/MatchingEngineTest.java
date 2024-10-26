@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MatchingEngineTest {
 
@@ -96,4 +95,76 @@ public class MatchingEngineTest {
         assertEquals(1, engine.getOrderBook().getSellPriceLevels().get(100.0).size());
         assertEquals(100, engine.getOrderBook().getSellPriceLevels().get(100.0).peek().getQuantity());
     }
+
+    @Test
+    void testCancelBuyOrder() {
+        Order buyOrder1 = new Order("1", 100, 900, OrderType.BUY, OrderStrat.Limit, "aapl");
+        Order buyOrder2 = new Order("2", 100, 900, OrderType.BUY, OrderStrat.Limit, "aapl");
+        engine.processOrder(buyOrder1);
+        engine.processOrder(buyOrder2);
+
+        // Cancel one of the buy orders
+        engine.getOrderBook().cancelOrder("1", OrderType.BUY, 100);
+
+        // Assert that only one order remains at the price level
+        assertEquals(1, engine.getOrderBook().getBuyPriceLevels().get(100.0).size());
+        assertEquals("2", engine.getOrderBook().getBuyPriceLevels().get(100.0).peek().getID());
+    }
+
+    @Test
+    void testCancelSellOrder() {
+        Order sellOrder1 = new Order("1", 100, 800, OrderType.SELL, OrderStrat.Limit, "aapl");
+        Order sellOrder2 = new Order("2", 100, 800, OrderType.SELL, OrderStrat.Limit, "aapl");
+        engine.processOrder(sellOrder1);
+        engine.processOrder(sellOrder2);
+
+        // Cancel one of the sell orders
+        engine.getOrderBook().cancelOrder("1", OrderType.SELL, 100);
+
+        // Assert that only one order remains at the price level
+        assertEquals(1, engine.getOrderBook().getSellPriceLevels().get(100.0).size());
+        assertEquals("2", engine.getOrderBook().getSellPriceLevels().get(100.0).peek().getID());
+    }
+
+    @Test
+    void testCancelLastBuyOrderAtPriceLevel() {
+        Order buyOrder = new Order("1", 100, 900, OrderType.BUY, OrderStrat.Limit, "aapl");
+        engine.processOrder(buyOrder);
+
+        // Cancel the buy order
+        engine.getOrderBook().cancelOrder("1", OrderType.BUY, 100);
+
+        // Assert that the price level is removed from the book
+        assertTrue(engine.getOrderBook().getBuyPriceLevels().containsKey(100.0));
+        assertTrue(engine.getOrderBook().getBuyBook().contains(100.0));
+        assertEquals(0, engine.getOrderBook().getBuyPriceLevels().get(100.0).size());
+    }
+
+    @Test
+    void testCancelLastSellOrderAtPriceLevel() {
+        Order sellOrder = new Order("1", 100, 800, OrderType.SELL, OrderStrat.Limit, "aapl");
+        engine.processOrder(sellOrder);
+
+        // Cancel the sell order
+        engine.getOrderBook().cancelOrder("1", OrderType.SELL, 100);
+
+        // Assert that the price level is removed from the book
+        assertTrue(engine.getOrderBook().getSellPriceLevels().containsKey(100.0));
+        assertTrue(engine.getOrderBook().getSellBook().contains(100.0));
+        assertEquals(0, engine.getOrderBook().getSellPriceLevels().get(100.0).size());
+    }
+
+    @Test
+    void testCancelNonExistentOrder() {
+        Order buyOrder = new Order("1", 100, 900, OrderType.BUY, OrderStrat.Limit, "aapl");
+        engine.processOrder(buyOrder);
+
+        // Attempt to cancel a non-existent order
+        engine.getOrderBook().cancelOrder("2", OrderType.BUY, 100);
+
+        // Assert that the existing order is still in the book
+        assertEquals(1, engine.getOrderBook().getBuyPriceLevels().get(100.0).size());
+        assertEquals("1", engine.getOrderBook().getBuyPriceLevels().get(100.0).peek().getID());
+    }
+
 }
