@@ -23,67 +23,75 @@ public class MatchingEngine {
 
     //matching algorithm for limit orders
     private void processLimitOrder(Order order){
-        //handle buy order logic
         if (order.getOrderType() == OrderType.BUY){
-            //retrieve top order for product of order from queue
-            Order topSellOrder = orderBook.getTopSellOrder(order.getProduct());
-            //check if the price is equal to or less than what they are willing to buy for
-            while (order.getQuantity() > 0 && topSellOrder != null){
-                if (order.getPrice() < topSellOrder.getPrice()){
-                    orderBook.addOrder(order);
-                    return;
+
+            double topSellPrice = orderBook.getTopSellPrice();
+            while (order.getQuantity() > 0 && !orderBook.isSellEmpty()){
+
+                if (order.getPrice() >= topSellPrice){
+                    Order orderBeingMatched = orderBook.getTopSellOrder(topSellPrice);
+                    int quantityRemaining = orderBeingMatched.getQuantity() - order.getQuantity();
+
+                    if (quantityRemaining >= 0){
+                        order.setQuantity(0);
+                        //if exactly matched
+                        if (quantityRemaining == 0){
+                            orderBook.removeTopSellOrder(topSellPrice);
+                            System.out.println("Order has been filled, and fully matched");
+                        }
+
+                        //if partially matched
+                        else{
+                            orderBeingMatched.setQuantity(quantityRemaining);
+                            System.out.println("Order has been filled, but partially matched");
+                        }
+
+                    }
+                    else{
+                        orderBook.removeTopSellOrder(topSellPrice);
+                        order.setQuantity(Math.abs(quantityRemaining));
+                    }
                 }
                 else {
-                    //see if we need to remove the order from the book or not
-                    int remainingQuantity = topSellOrder.getQuantity() - order.getQuantity();
-                    if (remainingQuantity >= 0){
-                        //check if this updates the one in the queue
-                        topSellOrder.setQuantity(remainingQuantity);
-                        orderBook.removeTopSellOrder(order.getProduct());
-                        order.setQuantity(0);
-                        if (topSellOrder.getQuantity() > 0){
-                            orderBook.addOrder(topSellOrder);
-                        }
-                        break;
-                    }
-                    else {
-                        orderBook.removeTopSellOrder(order.getProduct());
-                        order.setQuantity(order.getQuantity() - topSellOrder.getQuantity());
-                        topSellOrder = orderBook.getTopSellOrder(order.getProduct());
-                    }
+                    break;
                 }
+                topSellPrice = orderBook.getTopSellPrice();
             }
-            if (order.getQuantity() > 0){
-                orderBook.addOrder(order);
+                if (order.getQuantity() > 0){
+                    orderBook.addOrder(order);
             }
         }
-
         else if (order.getOrderType() == OrderType.SELL){
-            Order topBuyOrder = orderBook.getTopBuyOrder(order.getProduct());
 
-            while (order.getQuantity() > 0 && topBuyOrder != null){
-                if (order.getPrice() > topBuyOrder.getPrice()){
-                    orderBook.addOrder(order);
-                    return;
+            double topBuyPrice = orderBook.getTopBuyPrice();
+            while (order.getQuantity() > 0 && !orderBook.isBuyEmpty()){
+
+                if (order.getPrice() <= topBuyPrice){
+                    Order orderBeingMatched = orderBook.getTopBuyOrder(topBuyPrice);
+                    int quantityRemaining = orderBeingMatched.getQuantity() - order.getQuantity();
+
+                    if (quantityRemaining >= 0){
+                        order.setQuantity(0);
+                        if (quantityRemaining == 0){
+                            orderBook.removeTopBuyOrder(topBuyPrice);
+                            System.out.println("Order has been filled, and fully matched");
+                        }
+                        else {
+                            orderBeingMatched.setQuantity(quantityRemaining);
+                            System.out.println("Order has been filled, but partially matched");
+                        }
+                    }
+                    else{
+                        orderBook.removeTopBuyOrder(topBuyPrice);
+                        order.setQuantity(Math.abs(quantityRemaining));
+                    }
                 }
                 else {
-                    int remainingQuantity = topBuyOrder.getQuantity() - order.getQuantity();
-                    if (remainingQuantity >= 0){
-                        topBuyOrder.setQuantity(remainingQuantity);
-                        order.setQuantity(0);
-                        orderBook.removeTopBuyOrder(order.getProduct());
-                        if (topBuyOrder.getQuantity() > 0){
-                            orderBook.addOrder(topBuyOrder);
-                        }
-                        break;
-                    }
-                    else {
-                        orderBook.removeTopBuyOrder(order.getProduct());
-                        order.setQuantity(order.getQuantity() - topBuyOrder.getQuantity());
-                        topBuyOrder = orderBook.getTopBuyOrder(order.getProduct());
-                    }
+                    break;
                 }
+                topBuyPrice = orderBook.getTopBuyPrice();
             }
+
             if (order.getQuantity() > 0){
                 orderBook.addOrder(order);
             }
@@ -92,44 +100,47 @@ public class MatchingEngine {
 
     private void processMarketOrder(Order order){
         if (order.getOrderType() == OrderType.BUY){
-            Order topSellOrder = orderBook.getTopSellOrder(order.getProduct());
-            while (order.getQuantity() > 0 && topSellOrder != null){
-                int remainingQuantity = topSellOrder.getQuantity() - order.getQuantity();
-                if (remainingQuantity >= 0){
-                    topSellOrder.setQuantity(remainingQuantity);
-                    orderBook.removeTopSellOrder(order.getProduct());
+            double topSellPrice = orderBook.getTopSellPrice();
+            while (order.getQuantity() > 0 && !orderBook.isSellEmpty()){
+
+                Order orderBeingMatched = orderBook.getTopSellOrder(topSellPrice);
+                int quantityRemaining = orderBeingMatched.getQuantity() - order.getQuantity();
+                if (quantityRemaining >= 0){
                     order.setQuantity(0);
-                    if (topSellOrder.getQuantity() > 0){
-                        orderBook.addOrder(topSellOrder);
+                    if (quantityRemaining == 0){
+                        orderBook.removeTopSellOrder(topSellPrice);
                     }
-                    break;
+                    else {
+                        orderBeingMatched.setQuantity(quantityRemaining);
+                    }
                 }
                 else {
-                    orderBook.removeTopSellOrder(order.getProduct());
-                    order.setQuantity(order.getQuantity() - topSellOrder.getQuantity());
-                    topSellOrder = orderBook.getTopSellOrder(order.getProduct());
+                    order.setQuantity(Math.abs(quantityRemaining));
                 }
+                topSellPrice = orderBook.getTopSellPrice();
             }
         }
 
         else if (order.getOrderType() == OrderType.SELL){
-            Order topBuyOrder = orderBook.getTopBuyOrder(order.getProduct());
-            while (order.getQuantity() > 0 && topBuyOrder != null){
-                int remainingQuantity = topBuyOrder.getQuantity() - order.getQuantity();
-                if (remainingQuantity >= 0){
-                    topBuyOrder.setQuantity(remainingQuantity);
-                    orderBook.removeTopBuyOrder(order.getProduct());
+            double topBuyPrice = orderBook.getTopBuyPrice();
+            while (order.getQuantity() > 0 && !orderBook.isBuyEmpty()){
+
+                Order orderBeingMatched = orderBook.getTopBuyOrder(topBuyPrice);
+                int quantityRemaining = orderBeingMatched.getQuantity() - order.getQuantity();
+
+                if (quantityRemaining >= 0){
                     order.setQuantity(0);
-                    if (topBuyOrder.getQuantity() > 0){
-                        orderBook.addOrder(topBuyOrder);
+                    if (quantityRemaining == 0){
+                        orderBook.removeTopBuyOrder(topBuyPrice);
                     }
-                    break;
+                    else{
+                        orderBeingMatched.setQuantity(quantityRemaining);
+                    }
                 }
                 else {
-                    orderBook.removeTopBuyOrder(order.getProduct());
-                    order.setQuantity(order.getQuantity() - topBuyOrder.getQuantity());
-                    topBuyOrder = orderBook.getTopBuyOrder(order.getProduct());
+                    order.setQuantity(Math.abs(quantityRemaining));
                 }
+                topBuyPrice = orderBook.getTopBuyPrice();
             }
         }
     }

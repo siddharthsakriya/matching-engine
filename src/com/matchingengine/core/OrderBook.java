@@ -1,48 +1,110 @@
 package com.matchingengine.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class OrderBook {
-    //seperate queue for each prodcut, and we have seperate ones for buy and sell
-    private Map<String, PriorityQueue<Order>> buyOrdersByProduct;
-    private Map<String, PriorityQueue<Order>> sellOrdersByProduct;
+
+    private PriorityQueue<Double> buyOrders;
+    private HashMap<Double, Queue<Order>> buyPriceLevels;
+    private PriorityQueue<Double> sellOrders;
+    private HashMap<Double, Queue<Order>> sellPriceLevels;
 
     public OrderBook() {
-        buyOrdersByProduct = new HashMap<>();
-        sellOrdersByProduct = new HashMap<>();
+        sellOrders = new PriorityQueue<>();
+        buyOrders = new PriorityQueue<>(Collections.reverseOrder());
+        buyPriceLevels = new HashMap<>();
+        sellPriceLevels = new HashMap<>();
     }
 
     public void addOrder(Order order){
         if (order.getOrderType() == OrderType.BUY) {
-            buyOrdersByProduct.computeIfAbsent(order.getProduct(), k -> new PriorityQueue<Order>(
-                    (o1, o2) -> Double.compare(o2.getPrice(), o2.getPrice())
-            ));
-            buyOrdersByProduct.get(order.getProduct()).add(order);
+            if(buyPriceLevels.containsKey(order.getPrice())) {
+                buyPriceLevels.get(order.getPrice()).add(order);
+            }
+            else{
+                buyOrders.add(order.getPrice());
+                buyPriceLevels.put(order.getPrice(), new LinkedList<>());
+                buyPriceLevels.get(order.getPrice()).add(order);
+            }
         }
-        else if (order.getOrderType() == OrderType.SELL) {
-            sellOrdersByProduct.computeIfAbsent(order.getProduct(), k -> new PriorityQueue<Order>(
-                    (o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice())
-            ));
-            sellOrdersByProduct.get(order.getProduct()).add(order);
+
+        else if(order.getOrderType() == OrderType.SELL) {
+            if(sellPriceLevels.containsKey(order.getPrice())) {
+                sellPriceLevels.get(order.getPrice()).add(order);
+            }
+            else{
+                sellOrders.add(order.getPrice());
+                sellPriceLevels.put(order.getPrice(), new LinkedList<>());
+                sellPriceLevels.get(order.getPrice()).add(order);
+            }
         }
     }
 
-    public Order getTopBuyOrder(String product){
-        return buyOrdersByProduct.getOrDefault(product, new PriorityQueue<>()).peek();
+    public boolean isSellEmpty(){
+        return sellOrders.isEmpty();
     }
 
-    public Order getTopSellOrder(String product){
-        return sellOrdersByProduct.getOrDefault(product, new PriorityQueue<>()).peek();
+    public boolean isBuyEmpty(){
+        return buyOrders.isEmpty();
     }
 
-    public Order removeTopBuyOrder(String product){
-        return buyOrdersByProduct.get(product) != null ? buyOrdersByProduct.get(product).poll() : null;
+    public double getTopSellPrice(){
+        if (!sellOrders.isEmpty()){
+            return sellOrders.peek();
+        }
+        return -1;
     }
 
-    public Order removeTopSellOrder(String product){
-        return sellOrdersByProduct.get(product) != null ? sellOrdersByProduct.get(product).poll() : null;
+    public double getTopBuyPrice(){
+        if (!buyOrders.isEmpty()){
+            return buyOrders.peek();
+        }
+        return -1;
+    }
+
+    public Order getTopSellOrder(double price){
+        if (!sellOrders.isEmpty()){
+            return sellPriceLevels.get(price).peek();
+        }
+        return null;
+    }
+
+    public Order getTopBuyOrder(double price){
+        if (!buyOrders.isEmpty()){
+            return buyPriceLevels.get(price).peek();
+        }
+        return null;
+    }
+
+    public void removeTopSellOrder(double price){
+        sellPriceLevels.get(price).poll();
+        if(sellPriceLevels.get(price).isEmpty()){
+            sellOrders.poll();
+            sellPriceLevels.remove(price);
+        }
+    }
+
+    public void removeTopBuyOrder(double price){
+        buyPriceLevels.get(price).poll();
+        if(buyPriceLevels.get(price).isEmpty()){
+            buyOrders.poll();
+            buyPriceLevels.remove(price);
+        }
+    }
+
+    public PriorityQueue<Double> getSellBook(){
+        return sellOrders;
+    }
+
+    public PriorityQueue<Double> getBuyBook(){
+        return buyOrders;
+    }
+
+    public HashMap<Double, Queue<Order>> getBuyPriceLevels(){
+        return buyPriceLevels;
+    }
+
+    public HashMap<Double, Queue<Order>> getSellPriceLevels(){
+        return sellPriceLevels;
     }
 }
