@@ -102,6 +102,11 @@ public class OrderBook {
         }
     }
 
+    public void updateOrder(Order newOrder, OrderType oldOrderType, double oldPrice, String oldOrderId){
+        cancelOrder(oldOrderId, oldOrderType, oldPrice);
+        addOrder(newOrder);
+    }
+
     public PriorityQueue<Double> getSellBook(){
         return sellOrders;
     }
@@ -117,6 +122,5 @@ public class OrderBook {
     public HashMap<Double, Queue<Order>> getSellPriceLevels(){
         return sellPriceLevels;
     }
-
 
 }
