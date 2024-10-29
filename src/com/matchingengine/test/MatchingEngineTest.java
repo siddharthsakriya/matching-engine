@@ -4,6 +4,7 @@ import com.matchingengine.core.Order;
 import com.matchingengine.core.OrderStrat;
 import com.matchingengine.core.OrderType;
 import com.matchingengine.matching.MatchingEngine;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -165,6 +166,36 @@ public class MatchingEngineTest {
         // Assert that the existing order is still in the book
         assertEquals(1, engine.getOrderBook().getBuyPriceLevels().get(100.0).size());
         assertEquals("1", engine.getOrderBook().getBuyPriceLevels().get(100.0).peek().getID());
+    }
+
+    @Test
+    void testPriorityQueueBuy() {
+        Order buyOrder = new Order("1", 100, 900, OrderType.BUY, OrderStrat.Limit, "aapl");
+        Order buyOrder1 = new Order("2", 150, 900, OrderType.BUY, OrderStrat.Limit, "aapl");
+        Order buyOrder2 = new Order("3", 200, 900, OrderType.BUY, OrderStrat.Limit, "aapl");
+
+        engine.processOrder(buyOrder);
+        engine.processOrder(buyOrder1);
+        engine.processOrder(buyOrder2);
+
+        Assertions.assertEquals(200.0, engine.getOrderBook().getBuyBook().poll());
+        Assertions.assertEquals(150.0, engine.getOrderBook().getBuyBook().poll());
+        Assertions.assertEquals(100.0, engine.getOrderBook().getBuyBook().poll());
+    }
+
+    @Test
+    void testPriorityQueueSell() {
+        Order sellOrder = new Order("1", 50, 900, OrderType.SELL, OrderStrat.Limit, "aapl");
+        Order sellOrder1 = new Order("2", 100, 900, OrderType.SELL, OrderStrat.Limit, "aapl");
+        Order sellOrder2 = new Order("3", 150, 900, OrderType.SELL, OrderStrat.Limit, "aapl");
+
+        engine.processOrder(sellOrder);
+        engine.processOrder(sellOrder1);
+        engine.processOrder(sellOrder2);
+
+        Assertions.assertEquals(50.0, engine.getOrderBook().getSellBook().poll());
+        Assertions.assertEquals(100.0, engine.getOrderBook().getSellBook().poll());
+        Assertions.assertEquals(150.0, engine.getOrderBook().getSellBook().poll());
     }
 
 }

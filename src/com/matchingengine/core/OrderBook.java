@@ -23,7 +23,7 @@ public class OrderBook {
             }
             else{
                 buyOrders.add(order.getPrice());
-                buyPriceLevels.put(order.getPrice(), new LinkedList<>());
+                buyPriceLevels.put(order.getPrice(), new ArrayDeque<>());
                 buyPriceLevels.get(order.getPrice()).add(order);
             }
         }
@@ -34,7 +34,7 @@ public class OrderBook {
             }
             else{
                 sellOrders.add(order.getPrice());
-                sellPriceLevels.put(order.getPrice(), new LinkedList<>());
+                sellPriceLevels.put(order.getPrice(), new ArrayDeque<>());
                 sellPriceLevels.get(order.getPrice()).add(order);
             }
         }
